@@ -67,6 +67,12 @@ namespace SerializerUnitTest
             var serializedOutput = Encoding.UTF8.GetString(memoryStream.ToArray());
 
             Assert.AreEqual(knownGood, serializedOutput);
+
+            var memoryStream2 = new MemoryStream();
+            CodegenSerializer.Serialize(testList, new Utf8JsonWriter(memoryStream2));
+            var serializedOutput2 = Encoding.UTF8.GetString(memoryStream2.ToArray());
+
+            Assert.AreEqual(serializedOutput, serializedOutput2, "Cached delegates returned a different value.");
         }
     }
 }
