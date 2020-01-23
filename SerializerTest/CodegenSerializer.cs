@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text.Json;
@@ -9,16 +10,12 @@ namespace SerializerTest
     public static class CodegenSerializer
     {
         private static Dictionary<Type, Delegate> Cache { get; } = new Dictionary<Type, Delegate>();
+        private static readonly MethodInfo EnumerableMethod = typeof(CodegenSerializer).GetMethod(nameof(WriteEnumerable), BindingFlags.NonPublic | BindingFlags.Static);
 
-        public static void Serialize<T>(List<T> objects, Utf8JsonWriter writer)
+        public static void Serialize<T>(T obj, Utf8JsonWriter writer)
         {
-            Cache.TryGetValue(typeof(T), out var del);
-            if (del == null)
-            {
-                Cache[typeof(T)] = del = BuildCache<T>();
-            }
-            var method = (Action<List<T>, Utf8JsonWriter>)del;
-            method(objects, writer);
+            var method = GetOrPopulateCacheDelegate<T>();
+            method(obj, writer);
             writer.Flush();
         }
 
@@ -26,65 +23,74 @@ namespace SerializerTest
         {
             var type = typeof(T);
             var members = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
-            var objectsParam = Expression.Parameter(typeof(List<T>), "objects");
+
+            var enumerableType = type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            if(enumerableType != null)
+            {
+                var enumerableGenericType = enumerableType.GetGenericArguments()[0];
+                var delegateType = typeof(Action<,>).MakeGenericType(enumerableType, typeof(Utf8JsonWriter));
+                return EnumerableMethod.MakeGenericMethod(enumerableGenericType).CreateDelegate(delegateType);
+            }
+
+            var objectParam = Expression.Parameter(type, "object");
             var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
 
-            var breakLabel = Expression.Label("objectsLoopBreak");
-            var loopVar = Expression.Variable(typeof(int));
-            var objectsLength = Expression.Property(objectsParam, "Count");
-            var obj = Expression.Variable(type);
-
-            var loopBlockContents = new List<Expression>
+            var writeObjectBlockContents = new List<Expression>
             {
-                Expression.Assign(obj, Expression.Property(objectsParam, "Item", loopVar)),
                 Expression.Call(writerParam, "WriteStartObject", null)
             };
             foreach (PropertyInfo property in members)
             {
                 if (property.PropertyType == typeof(string))
                 {
-                    loopBlockContents.Add(
+                    writeObjectBlockContents.Add(
                         Expression.Call(writerParam, "WriteString", null,
-                            Expression.Constant(property.Name), Expression.Property(obj, property)));
+                            Expression.Constant(property.Name), Expression.Property(objectParam, property)));
                 }
                 else if (property.PropertyType == typeof(decimal))
                 {
-                    loopBlockContents.Add(
+                    writeObjectBlockContents.Add(
                         Expression.Call(writerParam, "WriteNumber", null,
-                            Expression.Constant(property.Name), Expression.Property(obj, property)));
+                            Expression.Constant(property.Name), Expression.Property(objectParam, property)));
                 }
                 else if (property.PropertyType == typeof(int))
                 {
-                    loopBlockContents.Add(
+                    writeObjectBlockContents.Add(
                         Expression.Call(writerParam, "WriteNumber", null,
-                            Expression.Constant(property.Name), Expression.Property(obj, property)));
+                            Expression.Constant(property.Name), Expression.Property(objectParam, property)));
                 }
                 //TODO: Other Primitives
                 //TODO: Enumerables?
                 //TODO: Structs?
                 //TODO: Object types (including potentially recursive serialization!)
             }
-            loopBlockContents.Add(Expression.Call(writerParam, "WriteEndObject", null));
-            loopBlockContents.Add(Expression.PreIncrementAssign(loopVar));
+            writeObjectBlockContents.Add(Expression.Call(writerParam, "WriteEndObject", null));
 
-            var objectsLoopBody = Expression.IfThenElse(
-                                    Expression.LessThan(loopVar, objectsLength),
-                                    Expression.Block(loopBlockContents),
-                                    Expression.Goto(breakLabel)
-                                    );
+            var fullMethodBlock = Expression.Block(writeObjectBlockContents);
 
-            var fullMethodBlock = Expression.Block(
-                    //Block variables
-                    new[] { loopVar, obj },
-                    Expression.Call(writerParam, "WriteStartArray", null),
-                    //Loop
-                    Expression.Assign(loopVar, Expression.Constant(0)),
-                    Expression.Loop(objectsLoopBody, breakLabel),
-                    Expression.Call(writerParam, "WriteEndArray", null)
-                ); ;
-
-            var lambda = Expression.Lambda(fullMethodBlock, objectsParam, writerParam);
+            var lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam);
             return lambda.Compile(false);
+        }
+
+        private static void WriteEnumerable<T>(IEnumerable<T> objects, Utf8JsonWriter writer)
+        {
+            var method = GetOrPopulateCacheDelegate<T>();
+            writer.WriteStartArray();
+            foreach (var obj in objects)
+            {
+                method(obj, writer);
+            }
+            writer.WriteEndArray();
+        }
+
+        private static Action<T, Utf8JsonWriter> GetOrPopulateCacheDelegate<T>()
+        {
+            Cache.TryGetValue(typeof(T), out var del);
+            if (del == null)
+            {
+                Cache[typeof(T)] = del = BuildCache<T>();
+            }
+            return (Action<T, Utf8JsonWriter>)del;
         }
     }
 }
