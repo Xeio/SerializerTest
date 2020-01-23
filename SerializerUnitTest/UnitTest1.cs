@@ -74,5 +74,28 @@ namespace SerializerUnitTest
 
             Assert.AreEqual(serializedOutput, serializedOutput2, "Cached delegates returned a different value.");
         }
+
+        [Test]
+        public void TestTreeStructure()
+        {
+            var testList = new List<TestTree>()
+            {
+                new TestTree(){ Value = "Top A",
+                    Left = new TestTree(){ Value = "A Level 2 (L)" },
+                    Right = new TestTree() { Value = "A Level 2 (R)"} 
+                },
+                new TestTree(){ Value = "Top B",
+                    Left = new TestTree() { Value = "B Level 2 (L)" } 
+                }
+            };
+
+            var knownGood = JsonSerializer.Serialize(testList);
+
+            var memoryStream = new MemoryStream();
+            CodegenSerializer.Serialize(testList, new Utf8JsonWriter(memoryStream));
+            var serializedOutput = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+            Assert.AreEqual(knownGood, serializedOutput);
+        }
     }
 }
