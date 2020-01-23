@@ -4,6 +4,7 @@ using SerializerTest;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using TestObjects;
 
 namespace SerializerBenchmark
 {

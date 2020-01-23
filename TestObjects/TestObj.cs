@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SerializerTest
+﻿namespace TestObjects
 {
     public class TestObj
     {
