@@ -143,7 +143,7 @@ namespace SerializerTest
             {
                 expression =
                     Expression.Call(writerParam, "WriteNumber", null,
-                        Expression.Constant(property.Name), Expression.Convert(propertyExpression, typeof(int)));
+                        Expression.Constant(property.Name), Expression.Convert(Expression.Property(objectParam, property), typeof(int)));
             }
 
             if(underlyingType != null && expression != null)
