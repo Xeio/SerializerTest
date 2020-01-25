@@ -22,6 +22,8 @@ namespace SerializerTest
         private static Delegate BuildCache<T>()
         {
             var type = typeof(T);
+            if (type.IsValueType)
+            { throw new NotImplementedException(); }
             var members = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
 
             var enumerableType = type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
@@ -53,24 +55,12 @@ namespace SerializerTest
             };
             foreach (PropertyInfo property in members)
             {
-                if (property.PropertyType == typeof(string))
+                if(GetPrimitiveWriterExpression(property, objectParam, writerParam, out var writePrimitiveExpression))
                 {
-                    writeObjectBlockContents.Add(
-                        Expression.Call(writerParam, "WriteString", null,
-                            Expression.Constant(property.Name), Expression.Property(objectParam, property)));
+                    writeObjectBlockContents.Add(writePrimitiveExpression);
                 }
-                else if (property.PropertyType == typeof(decimal) || property.PropertyType == typeof(double) ||
-                            property.PropertyType == typeof(float) || property.PropertyType == typeof(int) ||
-                            property.PropertyType == typeof(long) || property.PropertyType == typeof(uint) ||
-                            property.PropertyType == typeof(ulong))
-                {
-                    writeObjectBlockContents.Add(
-                        Expression.Call(writerParam, "WriteNumber", null,
-                            Expression.Constant(property.Name), Expression.Property(objectParam, property)));
-                }
-                //TODO: Other Primitives
                 //TODO: Structs?
-                else if (typeof(object).IsAssignableFrom(property.PropertyType))
+                else
                 {
                     writeObjectBlockContents.Add(
                         Expression.IfThenElse(
@@ -116,6 +106,56 @@ namespace SerializerTest
                 writer.WriteStringValue(s);
             }
             writer.WriteEndArray();
+        }
+
+        private static bool GetPrimitiveWriterExpression(PropertyInfo property, Expression objectParam, Expression writerParam, out Expression expression)
+        {
+            expression = null;
+            Expression propertyExpression = Expression.Property(objectParam, property);
+            var propertyType = property.PropertyType;
+            var underlyingType = Nullable.GetUnderlyingType(property.PropertyType);
+            if(underlyingType != null)
+            {
+                propertyType = underlyingType;
+                //Have to cast nullable types to non-null so the method parameters match (we'll add the check for null at the end)
+                propertyExpression = Expression.Convert(Expression.Property(objectParam, property), underlyingType);
+            }
+
+            if (propertyType == typeof(string) || propertyType == typeof(DateTime)
+                     || propertyType == typeof(DateTimeOffset) || propertyType == typeof(Guid)
+                      || propertyType == typeof(JsonEncodedText))
+            {
+                expression =
+                    Expression.Call(writerParam, "WriteString", null,
+                        Expression.Constant(property.Name), propertyExpression);
+            }
+            else if (propertyType == typeof(decimal) || propertyType == typeof(double) ||
+                        propertyType == typeof(float) || propertyType == typeof(int) ||
+                        propertyType == typeof(long) || propertyType == typeof(uint) ||
+                        propertyType == typeof(ulong))
+            {
+                expression =
+                    Expression.Call(writerParam, "WriteNumber", null,
+                        Expression.Constant(property.Name), propertyExpression);
+            }
+            else if (propertyType == typeof(short) || propertyType == typeof(ushort)
+                        || propertyType == typeof(byte) || propertyType == typeof(sbyte))
+            {
+                expression =
+                    Expression.Call(writerParam, "WriteNumber", null,
+                        Expression.Constant(property.Name), Expression.Convert(propertyExpression, typeof(int)));
+            }
+
+            if(underlyingType != null && expression != null)
+            {
+                //If we're a nullable, wrap the whole thing in a null check
+                expression = Expression.IfThenElse(
+                    Expression.Equal(Expression.Property(objectParam, property), Expression.Constant(null)),
+                    Expression.Call(writerParam, "WriteNull", null, Expression.Constant(property.Name)),
+                    expression);
+            }
+
+            return expression != null;
         }
     }
 }
