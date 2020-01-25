@@ -31,5 +31,7 @@ namespace TestObjects
         public DateTimeOffset? DateTimeOffsetN { get; set; }
         public Guid Guid { get; set; }
         public Guid? GuidN { get; set; }
+        public int[] IntA { get; set; }
+        public string[] StringA { get; set; }
     }
 }

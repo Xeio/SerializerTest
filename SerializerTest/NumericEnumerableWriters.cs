@@ -17,9 +17,16 @@ namespace SerializerTest
 			{ typeof(UInt64), (Action<IEnumerable<UInt64>, Utf8JsonWriter, string>)WriteEnumerableUInt64},
 		};
 
-		public static void WriteEnumerableDecimal(IEnumerable<Decimal> numbers, Utf8JsonWriter writer, string _)
+		public static void WriteEnumerableDecimal(IEnumerable<Decimal> numbers, Utf8JsonWriter writer, string name)
 		{
-			writer.WriteStartArray();
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray(name);
+			}
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);
@@ -27,9 +34,16 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableDouble(IEnumerable<Double> numbers, Utf8JsonWriter writer, string _)
+		public static void WriteEnumerableDouble(IEnumerable<Double> numbers, Utf8JsonWriter writer, string name)
 		{
-			writer.WriteStartArray();
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray(name);
+			}
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);
@@ -37,9 +51,16 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableSingle(IEnumerable<Single> numbers, Utf8JsonWriter writer, string _)
+		public static void WriteEnumerableSingle(IEnumerable<Single> numbers, Utf8JsonWriter writer, string name)
 		{
-			writer.WriteStartArray();
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray(name);
+			}
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);
@@ -47,9 +68,16 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableInt32(IEnumerable<Int32> numbers, Utf8JsonWriter writer, string _)
+		public static void WriteEnumerableInt32(IEnumerable<Int32> numbers, Utf8JsonWriter writer, string name)
 		{
-			writer.WriteStartArray();
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray(name);
+			}
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);
@@ -57,9 +85,16 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableInt64(IEnumerable<Int64> numbers, Utf8JsonWriter writer, string _)
+		public static void WriteEnumerableInt64(IEnumerable<Int64> numbers, Utf8JsonWriter writer, string name)
 		{
-			writer.WriteStartArray();
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray(name);
+			}
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);
@@ -67,9 +102,16 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableUInt32(IEnumerable<UInt32> numbers, Utf8JsonWriter writer, string _)
+		public static void WriteEnumerableUInt32(IEnumerable<UInt32> numbers, Utf8JsonWriter writer, string name)
 		{
-			writer.WriteStartArray();
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray(name);
+			}
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);
@@ -77,9 +119,16 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableUInt64(IEnumerable<UInt64> numbers, Utf8JsonWriter writer, string _)
+		public static void WriteEnumerableUInt64(IEnumerable<UInt64> numbers, Utf8JsonWriter writer, string name)
 		{
-			writer.WriteStartArray();
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray(name);
+			}
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);

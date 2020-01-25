@@ -106,9 +106,16 @@ namespace SerializerTest
             return (Action<T, Utf8JsonWriter, string>)del;
         }
 
-        private static void WriteEnumerableString(IEnumerable<string> strings, Utf8JsonWriter writer, string _)
+        private static void WriteEnumerableString(IEnumerable<string> strings, Utf8JsonWriter writer, string name)
         {
-            writer.WriteStartArray();
+            if (name == null)
+            {
+                writer.WriteStartArray();
+            }
+            else
+            {
+                writer.WriteStartArray(name);
+            }
             foreach (var s in strings)
             {
                 writer.WriteStringValue(s);

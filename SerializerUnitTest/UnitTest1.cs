@@ -152,6 +152,8 @@ namespace SerializerUnitTest
                     UInt = 73823434, UIntN = 12312,
                     ULong = 123123123123, ULongN = 38412398412934,
                     String = "TEST",
+                    IntA = new []{5, 8, 99, -11, 0},
+                    StringA = new []{"foo", "Bar", "Ba\"''z"},
                 }
             };
 

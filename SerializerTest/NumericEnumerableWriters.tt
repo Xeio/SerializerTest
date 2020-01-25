@@ -27,9 +27,16 @@ namespace SerializerTest
 
 <# foreach (var type in Types) 
 { #>
-		public static void WriteEnumerable<#= type.Name #>(IEnumerable<<#= type.Name #>> numbers, Utf8JsonWriter writer, string _)
+		public static void WriteEnumerable<#= type.Name #>(IEnumerable<<#= type.Name #>> numbers, Utf8JsonWriter writer, string name)
 		{
-			writer.WriteStartArray();
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray(name);
+			}
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);
