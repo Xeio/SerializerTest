@@ -11,7 +11,6 @@ namespace SerializerTest
     public static class CodegenSerializer
     {
         private static Dictionary<Type, Delegate> Cache { get; } = new Dictionary<Type, Delegate>();
-        private static readonly MethodInfo EnumerableMethod = typeof(CodegenSerializer).GetMethod(nameof(WriteEnumerable), BindingFlags.NonPublic | BindingFlags.Static);
 
         public static void Serialize<T>(T obj, Utf8JsonWriter writer)
         {
