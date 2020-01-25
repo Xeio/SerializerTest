@@ -51,13 +51,10 @@ namespace SerializerTest
                         Expression.Call(writerParam, "WriteString", null,
                             Expression.Constant(property.Name), Expression.Property(objectParam, property)));
                 }
-                else if (property.PropertyType == typeof(decimal))
-                {
-                    writeObjectBlockContents.Add(
-                        Expression.Call(writerParam, "WriteNumber", null,
-                            Expression.Constant(property.Name), Expression.Property(objectParam, property)));
-                }
-                else if (property.PropertyType == typeof(int))
+                else if (property.PropertyType == typeof(decimal) || property.PropertyType == typeof(double) ||
+                            property.PropertyType == typeof(float) || property.PropertyType == typeof(int) ||
+                            property.PropertyType == typeof(long) || property.PropertyType == typeof(uint) ||
+                            property.PropertyType == typeof(ulong))
                 {
                     writeObjectBlockContents.Add(
                         Expression.Call(writerParam, "WriteNumber", null,
