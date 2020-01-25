@@ -76,6 +76,36 @@ namespace SerializerUnitTest
         }
 
         [Test]
+        public void TestListOfPrimitives()
+        {
+            var testList = new List<int>()
+            {
+                1, 2, 5, 0, 99, -153
+            };
+
+            var knownGood = JsonSerializer.Serialize(testList);
+
+            var memoryStream = new MemoryStream();
+            CodegenSerializer.Serialize(testList, new Utf8JsonWriter(memoryStream));
+            var serializedOutput = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+            Assert.AreEqual(knownGood, serializedOutput, "Enumerable of ints");
+
+            var testList2 = new List<string>()
+            {
+                "foo", "bar", "\"baz'''"
+            };
+
+            knownGood = JsonSerializer.Serialize(testList);
+
+            memoryStream = new MemoryStream();
+            CodegenSerializer.Serialize(testList, new Utf8JsonWriter(memoryStream));
+            serializedOutput = Encoding.UTF8.GetString(memoryStream.ToArray());
+
+            Assert.AreEqual(knownGood, serializedOutput, "Enumerable of strings");
+        }
+
+        [Test]
         public void TestTreeStructure()
         {
             var testList = new List<TestTree>()

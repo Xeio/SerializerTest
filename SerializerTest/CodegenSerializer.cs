@@ -29,6 +29,14 @@ namespace SerializerTest
             {
                 var enumerableGenericType = enumerableType.GetGenericArguments()[0];
                 var delegateType = typeof(Action<,,>).MakeGenericType(enumerableType, typeof(Utf8JsonWriter), typeof(string));
+                if(enumerableGenericType == typeof(string))
+                {
+                    return (Action<IEnumerable<string>, Utf8JsonWriter, string>)WriteEnumerableString;
+                }
+                if(NumericEnumerableWriters.NumericEnumerableDelegates.TryGetValue(enumerableGenericType, out var del))
+                {
+                    return del;
+                }
                 return EnumerableMethod.MakeGenericMethod(enumerableGenericType).CreateDelegate(delegateType);
             }
 
@@ -98,6 +106,16 @@ namespace SerializerTest
                 Cache[typeof(T)] = del = BuildCache<T>();
             }
             return (Action<T, Utf8JsonWriter, string>)del;
+        }
+
+        private static void WriteEnumerableString(IEnumerable<string> strings, Utf8JsonWriter writer, string _)
+        {
+            writer.WriteStartArray();
+            foreach (var s in strings)
+            {
+                writer.WriteStringValue(s);
+            }
+            writer.WriteEndArray();
         }
     }
 }
