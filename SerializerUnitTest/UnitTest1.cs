@@ -154,6 +154,8 @@ namespace SerializerUnitTest
                     String = "TEST",
                     IntA = new []{5, 8, 99, -11, 0},
                     StringA = new []{"foo", "Bar", "Ba\"''z"},
+                    StringL = new List<string>(){"foo1", "Bar1", "Ba\"''z1"},
+                    StringE = new []{"foo2", "Bar2", "Ba\"''z2"},
                 }
             };
 

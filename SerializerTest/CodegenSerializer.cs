@@ -22,7 +22,8 @@ namespace SerializerTest
         private static Delegate BuildCache<T>()
         {
             var type = typeof(T);
-            var enumerableType = type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+            var enumerableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ? type :
+                type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
             if (enumerableType != null)
             {
                 var enumerableGenericType = enumerableType.GetGenericArguments()[0];

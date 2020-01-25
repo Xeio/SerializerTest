@@ -33,5 +33,7 @@ namespace TestObjects
         public Guid? GuidN { get; set; }
         public int[] IntA { get; set; }
         public string[] StringA { get; set; }
+        public List<string> StringL { get; set; }
+        public IEnumerable<string> StringE { get; set; }
     }
 }
