@@ -110,6 +110,12 @@ namespace SerializerUnitTest
             CodegenEqualHelper(testList);
         }
 
+        [Test]
+        public void TestAnonymousType()
+        {
+            CodegenEqualHelper(new { A = "foo", B = 77, C = 77.223f });
+        }
+
         private void CodegenEqualHelper<T>(T obj, string message = null)
         {
             var knownGood = JsonSerializer.Serialize(obj);
