@@ -29,7 +29,7 @@ namespace SerializerBenchmark
                 new TestObj(){ FooString = "Sally", BarDecimal = 0m, BazInt = -77777 },
             };
 
-            Options = new JsonWriterOptions();
+            Options = new JsonWriterOptions() { SkipValidation = true };
         }
 
         [Benchmark]
@@ -58,6 +58,12 @@ namespace SerializerBenchmark
         {
             using var writer = new Utf8JsonWriter(Stream.Null, Options);
             CodegenSerializer.Serialize(TestObjects, writer);
+        }
+
+        [Benchmark]
+        public void Utf8JsonBench()
+        {
+            Utf8Json.JsonSerializer.Serialize(Stream.Null, TestObjects);
         }
     }
 }
