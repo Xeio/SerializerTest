@@ -15,6 +15,9 @@ namespace SerializerTest
 			{ typeof(Int64), (Action<IEnumerable<Int64>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableInt64},
 			{ typeof(UInt32), (Action<IEnumerable<UInt32>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableUInt32},
 			{ typeof(UInt64), (Action<IEnumerable<UInt64>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableUInt64},
+			{ typeof(Int16), (Action<IEnumerable<Int16>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableInt16},
+			{ typeof(UInt16), (Action<IEnumerable<UInt16>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableUInt16},
+			{ typeof(SByte), (Action<IEnumerable<SByte>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableSByte},
 		};
 
 		public static void WriteEnumerableDecimal(IEnumerable<Decimal> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
@@ -132,6 +135,57 @@ namespace SerializerTest
             foreach (var num in numbers)
             {
                 writer.WriteNumberValue(num);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteEnumerableInt16(IEnumerable<Int16> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var num in numbers)
+            {
+                writer.WriteNumberValue((int)num);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteEnumerableUInt16(IEnumerable<UInt16> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var num in numbers)
+            {
+                writer.WriteNumberValue((int)num);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteEnumerableSByte(IEnumerable<SByte> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var num in numbers)
+            {
+                writer.WriteNumberValue((int)num);
             }
             writer.WriteEndArray();
 		}

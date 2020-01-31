@@ -6,10 +6,7 @@
 <#@ output extension=".cs" #>
 <#
 	List<Type> Types = new List<Type>(){
-		typeof(decimal), typeof(double), typeof(float), typeof(int), typeof(long), typeof(uint), typeof(ulong)
-	};
-	List<Type> TypesWithCast = new List<Type>(){
-		typeof(short), typeof(ushort), typeof(sbyte)
+		typeof(DateTime), typeof(Guid), typeof(DateTimeOffset)//, typeof(JsonEncodedText),
 	};
 #>
 using System;
@@ -18,18 +15,15 @@ using System.Text.Json;
 
 namespace SerializerTest
 {
-    public static class NumericEnumerableWriters
+    public static class StringEnumerableWriters
     {
-		public static readonly Dictionary<Type, Delegate> NumericEnumerableDelegates = new Dictionary<Type, Delegate>()
+		public static readonly Dictionary<Type, Delegate> StringEnumerableDelegates = new Dictionary<Type, Delegate>()
 		{
 <# foreach (var type in Types) 
 { #>
 			{ typeof(<#= type.Name #>), (Action<IEnumerable<<#= type.Name #>>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerable<#= type.Name #>},
 <# } #>
-<# foreach (var type in TypesWithCast) 
-{ #>
-			{ typeof(<#= type.Name #>), (Action<IEnumerable<<#= type.Name #>>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerable<#= type.Name #>},
-<# } #>
+			{ typeof(JsonEncodedText), (Action<IEnumerable<JsonEncodedText>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableJsonEncodedText},
 		};
 
 <# foreach (var type in Types) 
@@ -46,15 +40,14 @@ namespace SerializerTest
 			}
             foreach (var num in numbers)
             {
-                writer.WriteNumberValue(num);
+                writer.WriteStringValue(num);
             }
             writer.WriteEndArray();
 		}
 
 <# } #>
-<# foreach (var type in TypesWithCast) 
-{ #>
-		public static void WriteEnumerable<#= type.Name #>(IEnumerable<<#= type.Name #>> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
+
+		public static void WriteEnumerableJsonEncodedText(IEnumerable<JsonEncodedText> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -66,11 +59,9 @@ namespace SerializerTest
 			}
             foreach (var num in numbers)
             {
-                writer.WriteNumberValue((int)num);
+                writer.WriteStringValue(num);
             }
             writer.WriteEndArray();
 		}
-
-<# } #>
 	}
 }

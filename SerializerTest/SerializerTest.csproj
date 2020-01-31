@@ -12,6 +12,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Update="StringEnumerableWriters.tt">
+      <LastGenOutput>StringEnumerableWriters.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
     <None Update="NumericEnumerableWriters.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>NumericEnumerableWriters.cs</LastGenOutput>
@@ -27,6 +31,11 @@
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
       <DependentUpon>NumericEnumerableWriters.tt</DependentUpon>
+    </Compile>
+    <Compile Update="StringEnumerableWriters.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>StringEnumerableWriters.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

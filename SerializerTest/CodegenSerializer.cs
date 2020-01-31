@@ -32,9 +32,13 @@ namespace SerializerTest
                 {
                     return (Action<IEnumerable<string>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableString;
                 }
-                if (NumericEnumerableWriters.NumericEnumerableDelegates.TryGetValue(enumerableGenericType, out var del))
+                if (StringEnumerableWriters.StringEnumerableDelegates.TryGetValue(enumerableGenericType, out var stringDel))
                 {
-                    return del;
+                    return stringDel;
+                }
+                if (NumericEnumerableWriters.NumericEnumerableDelegates.TryGetValue(enumerableGenericType, out var numericDel))
+                {
+                    return numericDel;
                 }
                 return WriteEnumerable(enumerableGenericType);
             }
