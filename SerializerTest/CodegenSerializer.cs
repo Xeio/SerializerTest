@@ -27,10 +27,10 @@ namespace SerializerTest
             if (enumerableType != null)
             {
                 var enumerableGenericType = enumerableType.GetGenericArguments()[0];
-                var delegateType = typeof(Action<,,>).MakeGenericType(enumerableType, typeof(Utf8JsonWriter), typeof(string));
+                var delegateType = typeof(Action<,,>).MakeGenericType(enumerableType, typeof(Utf8JsonWriter), typeof(JsonEncodedText?));
                 if (enumerableGenericType == typeof(string))
                 {
-                    return (Action<IEnumerable<string>, Utf8JsonWriter, string>)WriteEnumerableString;
+                    return (Action<IEnumerable<string>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableString;
                 }
                 if (NumericEnumerableWriters.NumericEnumerableDelegates.TryGetValue(enumerableGenericType, out var del))
                 {
@@ -41,14 +41,14 @@ namespace SerializerTest
 
             var objectParam = Expression.Parameter(type, "object");
             var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
-            var nameParam = Expression.Parameter(typeof(string), "name");
+            var nameParam = Expression.Parameter(typeof(JsonEncodedText?), "name");
 
             var writeObjectBlockContents = new List<Expression>
             {
                 Expression.IfThenElse(
                     Expression.Equal(nameParam, Expression.Constant(null)),
                     Expression.Call(writerParam, "WriteStartObject", null),
-                    Expression.Call(writerParam, "WriteStartObject", null, nameParam))
+                    Expression.Call(writerParam, "WriteStartObject", null, Expression.Property(nameParam, "Value")))
             };
             writeObjectBlockContents.AddRange(BuildPropertyWriters(type, objectParam, writerParam));
             writeObjectBlockContents.Add(Expression.Call(writerParam, "WriteEndObject", null));
@@ -63,7 +63,7 @@ namespace SerializerTest
         {
             var objectParam = Expression.Parameter(typeof(IEnumerable<>).MakeGenericType(enumerableGenericType), "object");
             var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
-            var nameParam = Expression.Parameter(typeof(string), "name");
+            var nameParam = Expression.Parameter(typeof(JsonEncodedText?), "name");
 
             var enumerator = Expression.Variable(typeof(IEnumerator<>).MakeGenericType(enumerableGenericType));
             var breakLabel = Expression.Label("objectsLoopBreak");
@@ -96,17 +96,17 @@ namespace SerializerTest
             return lambda.Compile();
         }
 
-        private static Action<T, Utf8JsonWriter, string> GetOrPopulateCacheDelegate<T>()
+        private static Action<T, Utf8JsonWriter, JsonEncodedText?> GetOrPopulateCacheDelegate<T>()
         {
             Cache.TryGetValue(typeof(T), out var del);
             if (del == null)
             {
                 Cache[typeof(T)] = del = BuildCache<T>();
             }
-            return (Action<T, Utf8JsonWriter, string>)del;
+            return (Action<T, Utf8JsonWriter, JsonEncodedText?>)del;
         }
 
-        private static void WriteEnumerableString(IEnumerable<string> strings, Utf8JsonWriter writer, string name)
+        private static void WriteEnumerableString(IEnumerable<string> strings, Utf8JsonWriter writer, JsonEncodedText? name)
         {
             if (name == null)
             {
@@ -114,7 +114,7 @@ namespace SerializerTest
             }
             else
             {
-                writer.WriteStartArray(name);
+                writer.WriteStartArray((JsonEncodedText)name);
             }
             foreach (var s in strings)
             {
@@ -135,11 +135,12 @@ namespace SerializerTest
                 }
                 else
                 {
+                    var propertyNameExpression = Expression.Constant(JsonEncodedText.Encode(property.Name));
                     yield return
                         Expression.IfThenElse(
                             Expression.Equal(Expression.Property(objectParam, property), Expression.Constant(null)),
-                            Expression.Call(writerParam, "WriteNull", null, Expression.Constant(property.Name)),
-                            Expression.Invoke(Expression.Call(typeof(CodegenSerializer), nameof(GetOrPopulateCacheDelegate), new[] { property.PropertyType }), Expression.Property(objectParam, property), writerParam, Expression.Constant(property.Name)));
+                            Expression.Call(writerParam, "WriteNull", null, propertyNameExpression),
+                            Expression.Invoke(Expression.Call(typeof(CodegenSerializer), nameof(GetOrPopulateCacheDelegate), new[] { property.PropertyType }), Expression.Property(objectParam, property), writerParam, Expression.TypeAs(propertyNameExpression, typeof(JsonEncodedText?))));
                 }
 
             }
@@ -158,13 +159,14 @@ namespace SerializerTest
                 propertyExpression = Expression.Convert(Expression.Property(objectParam, property), underlyingType);
             }
 
+            var propertyNameExpression = Expression.Constant(JsonEncodedText.Encode(property.Name));
             if (propertyType == typeof(string) || propertyType == typeof(DateTime)
                      || propertyType == typeof(DateTimeOffset) || propertyType == typeof(Guid)
                       || propertyType == typeof(JsonEncodedText))
             {
                 expression =
                     Expression.Call(writerParam, "WriteString", null,
-                        Expression.Constant(property.Name), propertyExpression);
+                        propertyNameExpression, propertyExpression);
             }
             else if (propertyType == typeof(decimal) || propertyType == typeof(double) ||
                         propertyType == typeof(float) || propertyType == typeof(int) ||
@@ -173,14 +175,14 @@ namespace SerializerTest
             {
                 expression =
                     Expression.Call(writerParam, "WriteNumber", null,
-                        Expression.Constant(property.Name), propertyExpression);
+                        propertyNameExpression, propertyExpression);
             }
             else if (propertyType == typeof(short) || propertyType == typeof(ushort)
                         || propertyType == typeof(byte) || propertyType == typeof(sbyte))
             {
                 expression =
                     Expression.Call(writerParam, "WriteNumber", null,
-                        Expression.Constant(property.Name), Expression.Convert(Expression.Property(objectParam, property), typeof(int)));
+                        propertyNameExpression, Expression.Convert(Expression.Property(objectParam, property), typeof(int)));
             }
 
             if (underlyingType != null && expression != null)
@@ -188,7 +190,7 @@ namespace SerializerTest
                 //If we're a nullable, wrap the whole thing in a null check
                 expression = Expression.IfThenElse(
                     Expression.Equal(Expression.Property(objectParam, property), Expression.Constant(null)),
-                    Expression.Call(writerParam, "WriteNull", null, Expression.Constant(property.Name)),
+                    Expression.Call(writerParam, "WriteNull", null, propertyNameExpression),
                     expression);
             }
 

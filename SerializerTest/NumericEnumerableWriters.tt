@@ -21,13 +21,13 @@ namespace SerializerTest
 		{
 <# foreach (var type in Types) 
 { #>
-			{ typeof(<#= type.Name #>), (Action<IEnumerable<<#= type.Name #>>, Utf8JsonWriter, string>)WriteEnumerable<#= type.Name #>},
+			{ typeof(<#= type.Name #>), (Action<IEnumerable<<#= type.Name #>>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerable<#= type.Name #>},
 <# } #>
 		};
 
 <# foreach (var type in Types) 
 { #>
-		public static void WriteEnumerable<#= type.Name #>(IEnumerable<<#= type.Name #>> numbers, Utf8JsonWriter writer, string name)
+		public static void WriteEnumerable<#= type.Name #>(IEnumerable<<#= type.Name #>> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -35,7 +35,7 @@ namespace SerializerTest
 			}
 			else
 			{
-				writer.WriteStartArray(name);
+				writer.WriteStartArray((JsonEncodedText)name);
 			}
             foreach (var num in numbers)
             {
