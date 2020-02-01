@@ -27,11 +27,6 @@ namespace SerializerTest
             if (enumerableType != null)
             {
                 var enumerableGenericType = enumerableType.GetGenericArguments()[0];
-                var delegateType = typeof(Action<,,>).MakeGenericType(enumerableType, typeof(Utf8JsonWriter), typeof(JsonEncodedText?));
-                if (enumerableGenericType == typeof(string))
-                {
-                    return (Action<IEnumerable<string>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableString;
-                }
                 if (StringEnumerableWriters.StringEnumerableDelegates.TryGetValue(enumerableGenericType, out var stringDel))
                 {
                     return stringDel;
@@ -108,23 +103,6 @@ namespace SerializerTest
                 Cache[typeof(T)] = del = BuildCache<T>();
             }
             return (Action<T, Utf8JsonWriter, JsonEncodedText?>)del;
-        }
-
-        private static void WriteEnumerableString(IEnumerable<string> strings, Utf8JsonWriter writer, JsonEncodedText? name)
-        {
-            if (name == null)
-            {
-                writer.WriteStartArray();
-            }
-            else
-            {
-                writer.WriteStartArray((JsonEncodedText)name);
-            }
-            foreach (var s in strings)
-            {
-                writer.WriteStringValue(s);
-            }
-            writer.WriteEndArray();
         }
 
         private static IEnumerable<Expression> BuildPropertyWriters(Type type, Expression objectParam, Expression writerParam)

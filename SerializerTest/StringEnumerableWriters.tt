@@ -6,7 +6,7 @@
 <#@ output extension=".cs" #>
 <#
 	List<Type> Types = new List<Type>(){
-		typeof(DateTime), typeof(Guid), typeof(DateTimeOffset)//, typeof(JsonEncodedText),
+		typeof(string), typeof(DateTime), typeof(Guid), typeof(DateTimeOffset)//, typeof(JsonEncodedText),
 	};
 #>
 using System;
@@ -28,7 +28,7 @@ namespace SerializerTest
 
 <# foreach (var type in Types) 
 { #>
-		public static void WriteEnumerable<#= type.Name #>(IEnumerable<<#= type.Name #>> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteEnumerable<#= type.Name #>(IEnumerable<<#= type.Name #>> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -38,16 +38,16 @@ namespace SerializerTest
 			{
 				writer.WriteStartArray((JsonEncodedText)name);
 			}
-            foreach (var num in numbers)
+            foreach (var val in values)
             {
-                writer.WriteStringValue(num);
+                writer.WriteStringValue(val);
             }
             writer.WriteEndArray();
 		}
 
 <# } #>
 
-		public static void WriteEnumerableJsonEncodedText(IEnumerable<JsonEncodedText> numbers, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteEnumerableJsonEncodedText(IEnumerable<JsonEncodedText> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -57,9 +57,9 @@ namespace SerializerTest
 			{
 				writer.WriteStartArray((JsonEncodedText)name);
 			}
-            foreach (var num in numbers)
+            foreach (var val in values)
             {
-                writer.WriteStringValue(num);
+                writer.WriteStringValue(val);
             }
             writer.WriteEndArray();
 		}
