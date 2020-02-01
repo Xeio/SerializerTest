@@ -27,13 +27,9 @@ namespace SerializerTest
             if (enumerableType != null)
             {
                 var enumerableGenericType = enumerableType.GetGenericArguments()[0];
-                if (StringEnumerableWriters.StringEnumerableDelegates.TryGetValue(enumerableGenericType, out var stringDel))
+                if (EnumerableWriters.EnumerableDelegates.TryGetValue(enumerableGenericType, out var del))
                 {
-                    return stringDel;
-                }
-                if (NumericEnumerableWriters.NumericEnumerableDelegates.TryGetValue(enumerableGenericType, out var numericDel))
-                {
-                    return numericDel;
+                    return del;
                 }
                 return WriteEnumerable(enumerableGenericType);
             }

@@ -8,17 +8,21 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Include="EnumerableWriters.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>EnumerableWriters.tt</DependentUpon>
+    </None>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\TestObjects\TestObjects.csproj" />
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="StringEnumerableWriters.tt">
-      <LastGenOutput>StringEnumerableWriters.cs</LastGenOutput>
+    <None Update="EnumerableWriters.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
-    <None Update="NumericEnumerableWriters.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>NumericEnumerableWriters.cs</LastGenOutput>
+      <LastGenOutput>EnumerableWriters.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
@@ -27,15 +31,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="NumericEnumerableWriters.cs">
+    <Compile Update="EnumerableWriters.cs">
       <DesignTime>True</DesignTime>
       <AutoGen>True</AutoGen>
-      <DependentUpon>NumericEnumerableWriters.tt</DependentUpon>
-    </Compile>
-    <Compile Update="StringEnumerableWriters.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>StringEnumerableWriters.tt</DependentUpon>
+      <DependentUpon>EnumerableWriters.tt</DependentUpon>
     </Compile>
   </ItemGroup>
 

@@ -1,0 +1,66 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension=".cs" #>
+<#
+	var TypesToGenerate = new List<(Type type, string methodName)>(){
+		(typeof(decimal), "WriteNumberValue"),
+		(typeof(double), "WriteNumberValue"),
+		(typeof(float), "WriteNumberValue"),
+		(typeof(int), "WriteNumberValue"),
+		(typeof(long), "WriteNumberValue"),
+		(typeof(uint), "WriteNumberValue"),
+		(typeof(ulong), "WriteNumberValue"),
+		(typeof(short), "WriteNumberValue"),
+		(typeof(ushort), "WriteNumberValue"),
+		(typeof(sbyte), "WriteNumberValue"),
+
+		(typeof(string), "WriteStringValue"),
+		(typeof(DateTime), "WriteStringValue"),
+		(typeof(Guid), "WriteStringValue"),
+		(typeof(DateTimeOffset), "WriteStringValue"),
+		//(typeof(JsonEncodedText), "WriteStringValue"),
+
+		(typeof(bool), "WriteBooleanValue"),
+	};
+#>
+using System;
+using System.Collections.Generic;
+using System.Text.Json;
+
+namespace SerializerTest
+{
+    public static class EnumerableWriters
+    {
+		public static readonly Dictionary<Type, Delegate> EnumerableDelegates = new Dictionary<Type, Delegate>()
+		{
+<# foreach (var typeToGenerate in TypesToGenerate) 
+{ #>
+			{ typeof(<#= typeToGenerate.type.Name #>), (Action<IEnumerable<<#= typeToGenerate.type.Name #>>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerable<#= typeToGenerate.type.Name #>},
+<# } #>
+		};
+
+<# foreach (var typeToGenerate in TypesToGenerate) 
+{ #>
+		public static void WriteEnumerable<#= typeToGenerate.type.Name #>(IEnumerable<<#= typeToGenerate.type.Name #>> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.<#= typeToGenerate.methodName #>(val);
+            }
+            writer.WriteEndArray();
+		}
+
+<# } #>
+	}
+}

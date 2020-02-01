@@ -33,8 +33,17 @@ namespace SerializerUnitTest
             CodegenEqualHelper(new List<int>()
             {
                 1, 2, 5, 0, 99, -153
-            }, "Enumerable of ints");
+            }, "List of ints");
 
+            CodegenEqualHelper(new List<short>()
+            {
+                1, 2, 5, 0, 99, -153
+            }, "List of shorts");
+
+            CodegenEqualHelper(new List<bool>()
+            {
+                true, true, true, false, true, false, false
+            }, "List of bools");
 
             CodegenEqualHelper(new List<string>()
             {
