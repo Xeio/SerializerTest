@@ -157,6 +157,8 @@ namespace SerializerUnitTest
                     StringA = new []{"foo", "Bar", "Ba\"''z"},
                     StringL = new List<string>(){"foo1", "Bar1", "Ba\"''z1"},
                     StringE = new []{"foo2", "Bar2", "Ba\"''z2"},
+                    Bool = true,
+                    BoolN = false
                 }
             };
 
