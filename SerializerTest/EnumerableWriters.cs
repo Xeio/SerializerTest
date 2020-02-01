@@ -8,24 +8,39 @@ namespace SerializerTest
     {
 		public static readonly Dictionary<Type, Delegate> EnumerableDelegates = new Dictionary<Type, Delegate>()
 		{
-			{ typeof(Decimal), (Action<IEnumerable<Decimal>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableDecimal},
-			{ typeof(Double), (Action<IEnumerable<Double>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableDouble},
-			{ typeof(Single), (Action<IEnumerable<Single>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableSingle},
-			{ typeof(Int32), (Action<IEnumerable<Int32>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableInt32},
-			{ typeof(Int64), (Action<IEnumerable<Int64>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableInt64},
-			{ typeof(UInt32), (Action<IEnumerable<UInt32>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableUInt32},
-			{ typeof(UInt64), (Action<IEnumerable<UInt64>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableUInt64},
-			{ typeof(Int16), (Action<IEnumerable<Int16>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableInt16},
-			{ typeof(UInt16), (Action<IEnumerable<UInt16>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableUInt16},
-			{ typeof(SByte), (Action<IEnumerable<SByte>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableSByte},
-			{ typeof(String), (Action<IEnumerable<String>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableString},
-			{ typeof(DateTime), (Action<IEnumerable<DateTime>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableDateTime},
-			{ typeof(Guid), (Action<IEnumerable<Guid>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableGuid},
-			{ typeof(DateTimeOffset), (Action<IEnumerable<DateTimeOffset>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableDateTimeOffset},
-			{ typeof(Boolean), (Action<IEnumerable<Boolean>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerableBoolean},
+			{ typeof(IEnumerable<Decimal>), (Action<IEnumerable<Decimal>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableDecimal},
+			{ typeof(IEnumerable<Double>), (Action<IEnumerable<Double>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableDouble},
+			{ typeof(IEnumerable<Single>), (Action<IEnumerable<Single>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableSingle},
+			{ typeof(IEnumerable<Int32>), (Action<IEnumerable<Int32>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableInt32},
+			{ typeof(IEnumerable<Int64>), (Action<IEnumerable<Int64>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableInt64},
+			{ typeof(IEnumerable<UInt32>), (Action<IEnumerable<UInt32>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableUInt32},
+			{ typeof(IEnumerable<UInt64>), (Action<IEnumerable<UInt64>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableUInt64},
+			{ typeof(IEnumerable<Int16>), (Action<IEnumerable<Int16>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableInt16},
+			{ typeof(IEnumerable<UInt16>), (Action<IEnumerable<UInt16>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableUInt16},
+			{ typeof(IEnumerable<SByte>), (Action<IEnumerable<SByte>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableSByte},
+			{ typeof(IEnumerable<String>), (Action<IEnumerable<String>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableString},
+			{ typeof(IEnumerable<DateTime>), (Action<IEnumerable<DateTime>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableDateTime},
+			{ typeof(IEnumerable<Guid>), (Action<IEnumerable<Guid>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableGuid},
+			{ typeof(IEnumerable<DateTimeOffset>), (Action<IEnumerable<DateTimeOffset>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableDateTimeOffset},
+			{ typeof(IEnumerable<Boolean>), (Action<IEnumerable<Boolean>, Utf8JsonWriter, JsonEncodedText?>)WriteIEnumerableBoolean},
+			{ typeof(IList<Decimal>), (Action<IList<Decimal>, Utf8JsonWriter, JsonEncodedText?>)WriteIListDecimal},
+			{ typeof(IList<Double>), (Action<IList<Double>, Utf8JsonWriter, JsonEncodedText?>)WriteIListDouble},
+			{ typeof(IList<Single>), (Action<IList<Single>, Utf8JsonWriter, JsonEncodedText?>)WriteIListSingle},
+			{ typeof(IList<Int32>), (Action<IList<Int32>, Utf8JsonWriter, JsonEncodedText?>)WriteIListInt32},
+			{ typeof(IList<Int64>), (Action<IList<Int64>, Utf8JsonWriter, JsonEncodedText?>)WriteIListInt64},
+			{ typeof(IList<UInt32>), (Action<IList<UInt32>, Utf8JsonWriter, JsonEncodedText?>)WriteIListUInt32},
+			{ typeof(IList<UInt64>), (Action<IList<UInt64>, Utf8JsonWriter, JsonEncodedText?>)WriteIListUInt64},
+			{ typeof(IList<Int16>), (Action<IList<Int16>, Utf8JsonWriter, JsonEncodedText?>)WriteIListInt16},
+			{ typeof(IList<UInt16>), (Action<IList<UInt16>, Utf8JsonWriter, JsonEncodedText?>)WriteIListUInt16},
+			{ typeof(IList<SByte>), (Action<IList<SByte>, Utf8JsonWriter, JsonEncodedText?>)WriteIListSByte},
+			{ typeof(IList<String>), (Action<IList<String>, Utf8JsonWriter, JsonEncodedText?>)WriteIListString},
+			{ typeof(IList<DateTime>), (Action<IList<DateTime>, Utf8JsonWriter, JsonEncodedText?>)WriteIListDateTime},
+			{ typeof(IList<Guid>), (Action<IList<Guid>, Utf8JsonWriter, JsonEncodedText?>)WriteIListGuid},
+			{ typeof(IList<DateTimeOffset>), (Action<IList<DateTimeOffset>, Utf8JsonWriter, JsonEncodedText?>)WriteIListDateTimeOffset},
+			{ typeof(IList<Boolean>), (Action<IList<Boolean>, Utf8JsonWriter, JsonEncodedText?>)WriteIListBoolean},
 		};
 
-		public static void WriteEnumerableDecimal(IEnumerable<Decimal> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableDecimal(IEnumerable<Decimal> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -42,7 +57,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableDouble(IEnumerable<Double> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableDouble(IEnumerable<Double> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -59,7 +74,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableSingle(IEnumerable<Single> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableSingle(IEnumerable<Single> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -76,7 +91,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableInt32(IEnumerable<Int32> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableInt32(IEnumerable<Int32> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -93,7 +108,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableInt64(IEnumerable<Int64> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableInt64(IEnumerable<Int64> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -110,7 +125,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableUInt32(IEnumerable<UInt32> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableUInt32(IEnumerable<UInt32> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -127,7 +142,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableUInt64(IEnumerable<UInt64> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableUInt64(IEnumerable<UInt64> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -144,7 +159,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableInt16(IEnumerable<Int16> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableInt16(IEnumerable<Int16> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -161,7 +176,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableUInt16(IEnumerable<UInt16> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableUInt16(IEnumerable<UInt16> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -178,7 +193,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableSByte(IEnumerable<SByte> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableSByte(IEnumerable<SByte> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -195,7 +210,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableString(IEnumerable<String> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableString(IEnumerable<String> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -212,7 +227,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableDateTime(IEnumerable<DateTime> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableDateTime(IEnumerable<DateTime> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -229,7 +244,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableGuid(IEnumerable<Guid> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableGuid(IEnumerable<Guid> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -246,7 +261,7 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableDateTimeOffset(IEnumerable<DateTimeOffset> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableDateTimeOffset(IEnumerable<DateTimeOffset> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{
@@ -263,7 +278,262 @@ namespace SerializerTest
             writer.WriteEndArray();
 		}
 
-		public static void WriteEnumerableBoolean(IEnumerable<Boolean> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void WriteIEnumerableBoolean(IEnumerable<Boolean> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteBooleanValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListDecimal(IList<Decimal> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListDouble(IList<Double> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListSingle(IList<Single> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListInt32(IList<Int32> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListInt64(IList<Int64> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListUInt32(IList<UInt32> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListUInt64(IList<UInt64> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListInt16(IList<Int16> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListUInt16(IList<UInt16> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListSByte(IList<SByte> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteNumberValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListString(IList<String> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteStringValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListDateTime(IList<DateTime> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteStringValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListGuid(IList<Guid> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteStringValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListDateTimeOffset(IList<DateTimeOffset> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		{
+			if (name == null)
+			{
+				writer.WriteStartArray();
+			}
+			else
+			{
+				writer.WriteStartArray((JsonEncodedText)name);
+			}
+            foreach (var val in values)
+            {
+                writer.WriteStringValue(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteIListBoolean(IList<Boolean> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{

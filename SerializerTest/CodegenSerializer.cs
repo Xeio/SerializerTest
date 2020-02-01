@@ -22,12 +22,25 @@ namespace SerializerTest
         private static Delegate BuildCache<T>()
         {
             var type = typeof(T);
+
+            var ilistType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IList<>) ? type :
+                type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IList<>));
+            if (ilistType != null && !type.IsValueType)
+            {
+                var ilistGenericType = ilistType.GetGenericArguments()[0];
+                if (EnumerableWriters.EnumerableDelegates.TryGetValue(ilistType, out var del))
+                {
+                    return del;
+                }
+                return WriteIList(ilistGenericType);
+            }
+
             var enumerableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ? type :
                 type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(IEnumerable<>));
             if (enumerableType != null)
             {
                 var enumerableGenericType = enumerableType.GetGenericArguments()[0];
-                if (EnumerableWriters.EnumerableDelegates.TryGetValue(enumerableGenericType, out var del))
+                if (EnumerableWriters.EnumerableDelegates.TryGetValue(enumerableType, out var del))
                 {
                     return del;
                 }
@@ -85,6 +98,46 @@ namespace SerializerTest
                     Expression.Loop(objectsLoopBody, breakLabel),
                     Expression.Call(writerParam, "WriteEndArray", null),
                     Expression.Call(enumerator, typeof(IDisposable).GetMethod("Dispose"))
+                );
+
+            var lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);
+            return lambda.Compile();
+        }
+
+        private static Delegate WriteIList(Type enumerableGenericType)
+        {
+            var objectParam = Expression.Parameter(typeof(IList<>).MakeGenericType(enumerableGenericType), "object");
+            var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
+            var nameParam = Expression.Parameter(typeof(JsonEncodedText?), "name");
+
+            var breakLabel = Expression.Label("objectsLoopBreak");
+            var obj = Expression.Variable(enumerableGenericType);
+            var loopVar = Expression.Variable(typeof(int));
+            var countVar = Expression.Variable(typeof(int));
+
+            var loopBlockContents = new List<Expression>
+            {
+                Expression.Assign(obj, Expression.Property(objectParam, "Item", loopVar)),
+                Expression.Call(writerParam, "WriteStartObject", null)
+            };
+            loopBlockContents.AddRange(BuildPropertyWriters(enumerableGenericType, obj, writerParam));
+            loopBlockContents.Add(Expression.Call(writerParam, "WriteEndObject", null));
+            loopBlockContents.Add(Expression.PostIncrementAssign(loopVar));
+
+            var objectsLoopBody = Expression.IfThenElse(
+                                    Expression.LessThan(loopVar, countVar),
+                                    Expression.Block(loopBlockContents),
+                                    Expression.Goto(breakLabel)
+                                    );
+
+            var countMemberInfo = typeof(ICollection<>).MakeGenericType(enumerableGenericType).GetProperty("Count");
+            var fullMethodBlock = Expression.Block(
+                    new[] { obj, loopVar, countVar },
+                    Expression.Call(writerParam, "WriteStartArray", null),
+                    Expression.Assign(loopVar, Expression.Constant(0)),
+                    Expression.Assign(countVar, Expression.Property(objectParam, countMemberInfo)),
+                    Expression.Loop(objectsLoopBody, breakLabel),
+                    Expression.Call(writerParam, "WriteEndArray", null)
                 );
 
             var lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);

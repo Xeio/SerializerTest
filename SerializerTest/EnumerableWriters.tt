@@ -25,6 +25,11 @@
 
 		(typeof(bool), "WriteBooleanValue"),
 	};
+
+	var InterfaceNames = new List<string>()
+	{
+		"IEnumerable", "IList"
+	};
 #>
 using System;
 using System.Collections.Generic;
@@ -36,15 +41,19 @@ namespace SerializerTest
     {
 		public static readonly Dictionary<Type, Delegate> EnumerableDelegates = new Dictionary<Type, Delegate>()
 		{
-<# foreach (var typeToGenerate in TypesToGenerate) 
+<#
+foreach (var interfaceName in InterfaceNames)
+foreach (var typeToGenerate in TypesToGenerate) 
 { #>
-			{ typeof(<#= typeToGenerate.type.Name #>), (Action<IEnumerable<<#= typeToGenerate.type.Name #>>, Utf8JsonWriter, JsonEncodedText?>)WriteEnumerable<#= typeToGenerate.type.Name #>},
+			{ typeof(<#= interfaceName #><<#= typeToGenerate.type.Name #>>), (Action<<#= interfaceName #><<#= typeToGenerate.type.Name #>>, Utf8JsonWriter, JsonEncodedText?>)Write<#= interfaceName #><#= typeToGenerate.type.Name #>},
 <# } #>
 		};
 
-<# foreach (var typeToGenerate in TypesToGenerate) 
+<# 
+foreach (var interfaceName in InterfaceNames)
+foreach (var typeToGenerate in TypesToGenerate) 
 { #>
-		public static void WriteEnumerable<#= typeToGenerate.type.Name #>(IEnumerable<<#= typeToGenerate.type.Name #>> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void Write<#= interfaceName #><#= typeToGenerate.type.Name #>(<#= interfaceName #><<#= typeToGenerate.type.Name #>> values, Utf8JsonWriter writer, JsonEncodedText? name)
 		{
 			if (name == null)
 			{

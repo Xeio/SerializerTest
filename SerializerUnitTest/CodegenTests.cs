@@ -26,9 +26,53 @@ namespace SerializerUnitTest
         }
 
         [Test]
-        public void TestListOfPrimitives()
+        public void TestEnumerablePrimitives()
         {
             CodegenEqualHelper(Enumerable.Range(5, 17), "Enumerable range ints");
+
+            CodegenEqualHelper(new List<int>()
+            {
+                1, 2, 5, 0, 99, -153
+            }.Where((i) => true), "List of ints");
+
+            CodegenEqualHelper(new List<short>()
+            {
+                1, 2, 5, 0, 99, -153
+            }.Where((i) => true), "List of shorts");
+
+            CodegenEqualHelper(new List<bool>()
+            {
+                true, true, true, false, true, false, false
+            }.Where((i) => true), "List of bools");
+
+            CodegenEqualHelper(new List<string>()
+            {
+                "foo", "bar", "\"baz'''"
+            }.Where((i) => true), "Enumerable of strings");
+
+
+            CodegenEqualHelper(new List<Guid>()
+            {
+                Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid()
+            }.Where((i) => true), "Enumerable of Guids");
+
+
+            CodegenEqualHelper(new List<DateTime>()
+            {
+                DateTime.Now, DateTime.UtcNow, DateTime.Now.AddDays(7)
+            }.Where((i) => true), "Enumerable of DateTimes");
+
+
+            CodegenEqualHelper(new List<short>()
+            {
+                8, 12, -117, 257
+            }.Where((i) => true), "Enumerable of shorts");
+        }
+
+        [Test]
+        public void TestIListPrimitives()
+        {
+            CodegenEqualHelper(Enumerable.Range(5, 17).ToArray(), "Array of ints");
 
             CodegenEqualHelper(new List<int>()
             {
