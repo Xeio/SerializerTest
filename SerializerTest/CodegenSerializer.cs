@@ -166,6 +166,12 @@ namespace SerializerTest
                     Expression.Call(writerParam, "WriteNumber", null,
                         propertyNameExpression, Expression.Convert(Expression.Property(objectParam, property), typeof(int)));
             }
+            else if (propertyType == typeof(bool))
+            {
+                expression =
+                    Expression.Call(writerParam, "WriteBoolean", null,
+                        propertyNameExpression, propertyExpression);
+            }
 
             if (underlyingType != null && expression != null)
             {

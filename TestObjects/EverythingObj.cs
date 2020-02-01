@@ -25,6 +25,8 @@ namespace TestObjects
         public short Short { get; set; }
         public short? ShortN { get; set; }
         public string String { get; set; }
+        public bool Bool { get; set; }
+        public bool? BoolN { get; set; }
         public DateTime DateTime { get; set; }
         public DateTime? DateTimeN { get; set; }
         public DateTimeOffset DateTimeOffset { get; set; }
