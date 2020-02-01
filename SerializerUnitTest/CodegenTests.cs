@@ -171,6 +171,12 @@ namespace SerializerUnitTest
             CodegenEqualHelper(new { A = "foo", B = 77, C = 77.223f });
         }
 
+        [Test]
+        public void TestTuple()
+        {
+            CodegenEqualHelper((Name:"Foo", Value:87, FloatyThing:99.3f));
+        }
+
         private void CodegenEqualHelper<T>(T obj, string message = null)
         {
             var knownGood = JsonSerializer.Serialize(obj);
