@@ -38,7 +38,7 @@ namespace SerializerTest
                 {
                     return del;
                 }
-                return WriteIList(ilistGenericType);
+                return GenerateWriteIList(ilistGenericType);
             }
 
             var enumerableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ? type :
@@ -50,7 +50,7 @@ namespace SerializerTest
                 {
                     return del;
                 }
-                return WriteEnumerable(enumerableGenericType);
+                return GenerateWriteEnumerable(enumerableGenericType);
             }
 
             var objectParam = Expression.Parameter(type, "object");
@@ -73,7 +73,7 @@ namespace SerializerTest
             return lambda.Compile();
         }
 
-        private static Delegate WriteEnumerable(Type enumerableGenericType)
+        private static Delegate GenerateWriteEnumerable(Type enumerableGenericType)
         {
             var objectParam = Expression.Parameter(typeof(IEnumerable<>).MakeGenericType(enumerableGenericType), "object");
             var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
@@ -99,7 +99,10 @@ namespace SerializerTest
 
             var fullMethodBlock = Expression.Block(
                     new[] { enumerator, obj },
-                    Expression.Call(writerParam, "WriteStartArray", null),
+                    Expression.IfThenElse(
+                        Expression.Equal(nameParam, Expression.Constant(null)),
+                        Expression.Call(writerParam, "WriteStartArray", null),
+                        Expression.Call(writerParam, "WriteStartArray", null, Expression.Property(nameParam, "Value"))),
                     Expression.Assign(enumerator, Expression.Call(objectParam, "GetEnumerator", null)),
                     Expression.Loop(objectsLoopBody, breakLabel),
                     Expression.Call(writerParam, "WriteEndArray", null),
@@ -110,7 +113,7 @@ namespace SerializerTest
             return lambda.Compile();
         }
 
-        private static Delegate WriteIList(Type enumerableGenericType)
+        private static Delegate GenerateWriteIList(Type enumerableGenericType)
         {
             var objectParam = Expression.Parameter(typeof(IList<>).MakeGenericType(enumerableGenericType), "object");
             var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
@@ -139,7 +142,10 @@ namespace SerializerTest
             var countMemberInfo = typeof(ICollection<>).MakeGenericType(enumerableGenericType).GetProperty("Count");
             var fullMethodBlock = Expression.Block(
                     new[] { obj, loopVar, countVar },
-                    Expression.Call(writerParam, "WriteStartArray", null),
+                    Expression.IfThenElse(
+                        Expression.Equal(nameParam, Expression.Constant(null)),
+                        Expression.Call(writerParam, "WriteStartArray", null),
+                        Expression.Call(writerParam, "WriteStartArray", null, Expression.Property(nameParam, "Value"))),
                     Expression.Assign(loopVar, Expression.Constant(0)),
                     Expression.Assign(countVar, Expression.Property(objectParam, countMemberInfo)),
                     Expression.Loop(objectsLoopBody, breakLabel),

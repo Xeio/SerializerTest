@@ -177,6 +177,26 @@ namespace SerializerUnitTest
             CodegenEqualHelper((Name:"Foo", Value:87, FloatyThing:99.3f));
         }
 
+        [Test]
+        public void TestListOfComplexObjectProperty()
+        {
+            var testList = new ObjectListPropertyObj()
+            {
+                TestObjList = new List<TestObj>()
+                {
+                    new TestObj(){ FooString = "TestString", BarDecimal = 9.23m, BazInt = 77 },
+                    new TestObj(){ FooString = "OtherTestString", BarDecimal = 113m, BazInt = -44 }
+                },
+                TestObjEnumerable = new List<TestObj>()
+                {
+                    new TestObj(){ FooString = "TestString2", BarDecimal = 19.23m, BazInt = 177 },
+                    new TestObj(){ FooString = "OtherTestString2", BarDecimal = 1113m, BazInt = -144 }
+                },
+            };
+
+            CodegenEqualHelper(testList);
+        }
+
         private void CodegenEqualHelper<T>(T obj, string message = null)
         {
             var knownGood = JsonSerializer.Serialize(obj);
