@@ -45,24 +45,36 @@ namespace SerializerTest
 foreach (var interfaceName in InterfaceNames)
 foreach (var typeToGenerate in TypesToGenerate) 
 { #>
-			{ typeof(<#= interfaceName #><<#= typeToGenerate.type.Name #>>), (Action<<#= interfaceName #><<#= typeToGenerate.type.Name #>>, Utf8JsonWriter, JsonEncodedText?>)Write<#= interfaceName #><#= typeToGenerate.type.Name #>},
+			{ typeof(<#= interfaceName #><<#= typeToGenerate.type.Name #>>), (Action<<#= interfaceName #><<#= typeToGenerate.type.Name #>>, Utf8JsonWriter, JsonEncodedText>)Write<#= interfaceName #><#= typeToGenerate.type.Name #>},
 <# } #>
 		};
 
+		public static readonly Dictionary<Type, Delegate> EnumerableDelegatesNoName = new Dictionary<Type, Delegate>()
+		{
+<#
+foreach (var interfaceName in InterfaceNames)
+foreach (var typeToGenerate in TypesToGenerate) 
+{ #>
+			{ typeof(<#= interfaceName #><<#= typeToGenerate.type.Name #>>), (Action<<#= interfaceName #><<#= typeToGenerate.type.Name #>>, Utf8JsonWriter>)WriteNoName<#= interfaceName #><#= typeToGenerate.type.Name #>},
+<# } #>
+		};
 <# 
 foreach (var interfaceName in InterfaceNames)
 foreach (var typeToGenerate in TypesToGenerate) 
 { #>
-		public static void Write<#= interfaceName #><#= typeToGenerate.type.Name #>(<#= interfaceName #><<#= typeToGenerate.type.Name #>> values, Utf8JsonWriter writer, JsonEncodedText? name)
+		public static void Write<#= interfaceName #><#= typeToGenerate.type.Name #>(<#= interfaceName #><<#= typeToGenerate.type.Name #>> values, Utf8JsonWriter writer, JsonEncodedText name)
 		{
-			if (name == null)
-			{
-				writer.WriteStartArray();
-			}
-			else
-			{
-				writer.WriteStartArray((JsonEncodedText)name);
-			}
+			writer.WriteStartArray(name);
+            foreach (var val in values)
+            {
+                writer.<#= typeToGenerate.methodName #>(val);
+            }
+            writer.WriteEndArray();
+		}
+
+		public static void WriteNoName<#= interfaceName #><#= typeToGenerate.type.Name #>(<#= interfaceName #><<#= typeToGenerate.type.Name #>> values, Utf8JsonWriter writer)
+		{
+			writer.WriteStartArray();
             foreach (var val in values)
             {
                 writer.<#= typeToGenerate.methodName #>(val);

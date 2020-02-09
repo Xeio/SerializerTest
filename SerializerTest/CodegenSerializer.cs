@@ -12,20 +12,22 @@ namespace SerializerTest
     {
         public static void Serialize<T>(T obj, Utf8JsonWriter writer)
         {
-            DelegateCacheType<T>.cachedDelegate(obj, writer, null);
+            DelegateCacheType<T>.cachedDelegateNoName(obj, writer);
             writer.Flush();
         }
     }
 
     internal class DelegateCacheType<CacheType>
     {
-        public static Action<CacheType, Utf8JsonWriter, JsonEncodedText?> cachedDelegate;
+        public static Action<CacheType, Utf8JsonWriter, JsonEncodedText> cachedDelegateWithName;
+        public static Action<CacheType, Utf8JsonWriter> cachedDelegateNoName;
         static DelegateCacheType()
         {
-            cachedDelegate = (Action<CacheType, Utf8JsonWriter, JsonEncodedText?>)BuildCache<CacheType>();
+            cachedDelegateWithName = (Action<CacheType, Utf8JsonWriter, JsonEncodedText>)BuildCache<CacheType>(true);
+            cachedDelegateNoName = (Action<CacheType, Utf8JsonWriter>)BuildCache<CacheType>(false);
         }
 
-        private static Delegate BuildCache<T>()
+        private static Delegate BuildCache<T>(bool withName)
         {
             var type = typeof(T);
 
@@ -34,11 +36,15 @@ namespace SerializerTest
             if (ilistType != null && !type.IsValueType)
             {
                 var ilistGenericType = ilistType.GetGenericArguments()[0];
-                if (EnumerableWriters.EnumerableDelegates.TryGetValue(ilistType, out var del))
+                if (withName && EnumerableWriters.EnumerableDelegates.TryGetValue(ilistType, out var del))
                 {
                     return del;
                 }
-                return GenerateWriteIList(ilistGenericType);
+                if (EnumerableWriters.EnumerableDelegatesNoName.TryGetValue(ilistType, out var noNameDel))
+                {
+                    return noNameDel;
+                }
+                return GenerateWriteIList(ilistGenericType, withName);
             }
 
             var enumerableType = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEnumerable<>) ? type :
@@ -46,38 +52,52 @@ namespace SerializerTest
             if (enumerableType != null)
             {
                 var enumerableGenericType = enumerableType.GetGenericArguments()[0];
-                if (EnumerableWriters.EnumerableDelegates.TryGetValue(enumerableType, out var del))
+                if (withName && EnumerableWriters.EnumerableDelegates.TryGetValue(enumerableType, out var del))
                 {
                     return del;
                 }
-                return GenerateWriteEnumerable(enumerableGenericType);
+                if (EnumerableWriters.EnumerableDelegatesNoName.TryGetValue(enumerableType, out var noNameDel))
+                {
+                    return noNameDel;
+                }
+                return GenerateWriteEnumerable(enumerableGenericType, withName);
             }
 
             var objectParam = Expression.Parameter(type, "object");
             var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
-            var nameParam = Expression.Parameter(typeof(JsonEncodedText?), "name");
+            var nameParam = Expression.Parameter(typeof(JsonEncodedText), "name");
 
-            var writeObjectBlockContents = new List<Expression>
+            var writeObjectBlockContents = new List<Expression>();
+            if (withName)
             {
-                Expression.IfThenElse(
-                    Expression.Equal(nameParam, Expression.Constant(null)),
-                    Expression.Call(writerParam, "WriteStartObject", null),
-                    Expression.Call(writerParam, "WriteStartObject", null, Expression.Property(nameParam, "Value")))
-            };
+                writeObjectBlockContents.Add(Expression.Call(writerParam, "WriteStartObject", null, nameParam));
+            }
+            else
+            {
+                writeObjectBlockContents.Add(Expression.Call(writerParam, "WriteStartObject", null));
+            }
             writeObjectBlockContents.AddRange(BuildPropertyWriters(type, objectParam, writerParam));
             writeObjectBlockContents.Add(Expression.Call(writerParam, "WriteEndObject", null));
 
             var fullMethodBlock = Expression.Block(writeObjectBlockContents);
 
-            var lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);
+            LambdaExpression lambda;
+            if (withName)
+            {
+                lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);
+            }
+            else
+            {
+                lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam);
+            }
             return lambda.Compile();
         }
 
-        private static Delegate GenerateWriteEnumerable(Type enumerableGenericType)
+        private static Delegate GenerateWriteEnumerable(Type enumerableGenericType, bool withName)
         {
             var objectParam = Expression.Parameter(typeof(IEnumerable<>).MakeGenericType(enumerableGenericType), "object");
             var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
-            var nameParam = Expression.Parameter(typeof(JsonEncodedText?), "name");
+            var nameParam = Expression.Parameter(typeof(JsonEncodedText), "name");
 
             var enumerator = Expression.Variable(typeof(IEnumerator<>).MakeGenericType(enumerableGenericType));
             var breakLabel = Expression.Label("objectsLoopBreak");
@@ -97,27 +117,42 @@ namespace SerializerTest
                                     Expression.Goto(breakLabel)
                                     );
 
+            Expression writeStartArrayExpression;
+            if (withName)
+            {
+                writeStartArrayExpression = Expression.Call(writerParam, "WriteStartArray", null, nameParam);
+            }
+            else
+            {
+                writeStartArrayExpression = Expression.Call(writerParam, "WriteStartArray", null);
+            }
+
             var fullMethodBlock = Expression.Block(
                     new[] { enumerator, obj },
-                    Expression.IfThenElse(
-                        Expression.Equal(nameParam, Expression.Constant(null)),
-                        Expression.Call(writerParam, "WriteStartArray", null),
-                        Expression.Call(writerParam, "WriteStartArray", null, Expression.Property(nameParam, "Value"))),
+                    writeStartArrayExpression,
                     Expression.Assign(enumerator, Expression.Call(objectParam, "GetEnumerator", null)),
                     Expression.Loop(objectsLoopBody, breakLabel),
                     Expression.Call(writerParam, "WriteEndArray", null),
                     Expression.Call(enumerator, typeof(IDisposable).GetMethod("Dispose"))
                 );
 
-            var lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);
+            LambdaExpression lambda;
+            if (withName)
+            {
+                lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);
+            }
+            else
+            {
+                lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam);
+            }
             return lambda.Compile();
         }
 
-        private static Delegate GenerateWriteIList(Type enumerableGenericType)
+        private static Delegate GenerateWriteIList(Type enumerableGenericType, bool withName)
         {
             var objectParam = Expression.Parameter(typeof(IList<>).MakeGenericType(enumerableGenericType), "object");
             var writerParam = Expression.Parameter(typeof(Utf8JsonWriter), "writer");
-            var nameParam = Expression.Parameter(typeof(JsonEncodedText?), "name");
+            var nameParam = Expression.Parameter(typeof(JsonEncodedText), "name");
 
             var breakLabel = Expression.Label("objectsLoopBreak");
             var obj = Expression.Variable(enumerableGenericType);
@@ -139,20 +174,35 @@ namespace SerializerTest
                                     Expression.Goto(breakLabel)
                                     );
 
+            Expression writeStartArrayExpression;
+            if (withName)
+            {
+                writeStartArrayExpression = Expression.Call(writerParam, "WriteStartArray", null, nameParam);
+            }
+            else
+            {
+                writeStartArrayExpression = Expression.Call(writerParam, "WriteStartArray", null);
+            }
+
             var countMemberInfo = typeof(ICollection<>).MakeGenericType(enumerableGenericType).GetProperty("Count");
             var fullMethodBlock = Expression.Block(
                     new[] { obj, loopVar, countVar },
-                    Expression.IfThenElse(
-                        Expression.Equal(nameParam, Expression.Constant(null)),
-                        Expression.Call(writerParam, "WriteStartArray", null),
-                        Expression.Call(writerParam, "WriteStartArray", null, Expression.Property(nameParam, "Value"))),
+                    writeStartArrayExpression,
                     Expression.Assign(loopVar, Expression.Constant(0)),
                     Expression.Assign(countVar, Expression.Property(objectParam, countMemberInfo)),
                     Expression.Loop(objectsLoopBody, breakLabel),
                     Expression.Call(writerParam, "WriteEndArray", null)
                 );
 
-            var lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);
+            LambdaExpression lambda;
+            if (withName)
+            {
+                lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);
+            }
+            else
+            {
+                lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam);
+            }
             return lambda.Compile();
         }
         
@@ -168,13 +218,13 @@ namespace SerializerTest
                 }
                 else
                 {
-                    var fieldInfo = typeof(DelegateCacheType<>).MakeGenericType(property.PropertyType).GetField(nameof(cachedDelegate));
+                    var fieldInfo = typeof(DelegateCacheType<>).MakeGenericType(property.PropertyType).GetField(nameof(cachedDelegateWithName));
                     var propertyNameExpression = Expression.Constant(JsonEncodedText.Encode(property.Name));
                     yield return
                         Expression.IfThenElse(
                             Expression.Equal(Expression.Property(objectParam, property), Expression.Constant(null)),
                             Expression.Call(writerParam, "WriteNull", null, propertyNameExpression),
-                            Expression.Invoke(Expression.Field(null, fieldInfo), Expression.Property(objectParam, property), writerParam, Expression.Convert(propertyNameExpression, typeof(JsonEncodedText?))));
+                            Expression.Invoke(Expression.Field(null, fieldInfo), Expression.Property(objectParam, property), writerParam, propertyNameExpression));
                 }
 
             }
