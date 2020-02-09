@@ -10,13 +10,19 @@ namespace SerializerTest
 {
     public static class CodegenSerializer
     {
-        private static Dictionary<Type, Delegate> Cache { get; } = new Dictionary<Type, Delegate>();
-
         public static void Serialize<T>(T obj, Utf8JsonWriter writer)
         {
-            var method = GetOrPopulateCacheDelegate<T>();
-            method(obj, writer, null);
+            DelegateCacheType<T>.cachedDelegate(obj, writer, null);
             writer.Flush();
+        }
+    }
+
+    internal class DelegateCacheType<CacheType>
+    {
+        public static Action<CacheType, Utf8JsonWriter, JsonEncodedText?> cachedDelegate;
+        static DelegateCacheType()
+        {
+            cachedDelegate = (Action<CacheType, Utf8JsonWriter, JsonEncodedText?>)BuildCache<CacheType>();
         }
 
         private static Delegate BuildCache<T>()
@@ -143,17 +149,7 @@ namespace SerializerTest
             var lambda = Expression.Lambda(fullMethodBlock, objectParam, writerParam, nameParam);
             return lambda.Compile();
         }
-
-        private static Action<T, Utf8JsonWriter, JsonEncodedText?> GetOrPopulateCacheDelegate<T>()
-        {
-            Cache.TryGetValue(typeof(T), out var del);
-            if (del == null)
-            {
-                Cache[typeof(T)] = del = BuildCache<T>();
-            }
-            return (Action<T, Utf8JsonWriter, JsonEncodedText?>)del;
-        }
-
+        
         private static IEnumerable<Expression> BuildPropertyWriters(Type type, Expression objectParam, Expression writerParam)
         {
             var members = type.GetProperties(BindingFlags.Public | BindingFlags.Instance | BindingFlags.GetProperty);
@@ -166,12 +162,13 @@ namespace SerializerTest
                 }
                 else
                 {
+                    var fieldInfo = typeof(DelegateCacheType<>).MakeGenericType(property.PropertyType).GetField(nameof(cachedDelegate));
                     var propertyNameExpression = Expression.Constant(JsonEncodedText.Encode(property.Name));
                     yield return
                         Expression.IfThenElse(
                             Expression.Equal(Expression.Property(objectParam, property), Expression.Constant(null)),
                             Expression.Call(writerParam, "WriteNull", null, propertyNameExpression),
-                            Expression.Invoke(Expression.Call(typeof(CodegenSerializer), nameof(GetOrPopulateCacheDelegate), new[] { property.PropertyType }), Expression.Property(objectParam, property), writerParam, Expression.TypeAs(propertyNameExpression, typeof(JsonEncodedText?))));
+                            Expression.Invoke(Expression.Field(null, fieldInfo), Expression.Property(objectParam, property), writerParam, Expression.Convert(propertyNameExpression, typeof(JsonEncodedText?))));
                 }
 
             }
