@@ -13,6 +13,7 @@ namespace SerializerBenchmark
         private List<TestObj> SmallList;
         private IList<TestObj> LargeList;
         private List<string> StringList;
+        private List<int> IntList;
         private JsonWriterOptions Options;
 
         [GlobalSetup]
@@ -27,10 +28,12 @@ namespace SerializerBenchmark
 
             LargeList = new List<TestObj>();
             StringList = new List<string>();
+            IntList = new List<int>();
             foreach(var i in Enumerable.Range(0, 100))
             {
                 LargeList.Add(new TestObj() { FooString = "Testing " + i, BazInt = i, BarDecimal = i + 7.7m });
                 StringList.Add("Testing " + i);
+                IntList.Add(i + 77);
             }
 
             Options = new JsonWriterOptions() { SkipValidation = true };
@@ -94,6 +97,26 @@ namespace SerializerBenchmark
         public void Utf8JsonBenchStringList()
         {
             Utf8Json.JsonSerializer.Serialize(Stream.Null, StringList);
+        }
+
+        [Benchmark]
+        public void SystemTextJsonBenchIntList()
+        {
+            using var writer = new Utf8JsonWriter(Stream.Null, Options);
+            JsonSerializer.Serialize(writer, IntList);
+        }
+
+        [Benchmark]
+        public void CodegenSerializerBenchIntList()
+        {
+            using var writer = new Utf8JsonWriter(Stream.Null, Options);
+            CodegenSerializer.Serialize(IntList, writer);
+        }
+
+        [Benchmark]
+        public void Utf8JsonBenchIntList()
+        {
+            Utf8Json.JsonSerializer.Serialize(Stream.Null, IntList);
         }
     }
 }
