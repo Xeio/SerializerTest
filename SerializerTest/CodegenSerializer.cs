@@ -274,6 +274,12 @@ namespace SerializerTest
                     Expression.Call(writerParam, "WriteBoolean", null,
                         propertyNameExpression, propertyExpression);
             }
+            else if (propertyType == typeof(byte[]))
+            {
+                expression =
+                    Expression.Call(writerParam, "WriteBase64String", null,
+                        propertyNameExpression, propertyExpression);
+            }
 
             if (underlyingType != null && expression != null)
             {
